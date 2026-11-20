@@ -1,0 +1,386 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-E7SpIabT1v2E+rTel5Q46kQydxwck2uSiuESXCOYyfA='; style-src 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://api.github.com https://raw.githubusercontent.com; manifest-src 'self'">
+<meta name="color-scheme" content="light dark">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Toupie Live">
+<meta name="theme-color" content="#e8e9ee" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#050608" media="(prefers-color-scheme: dark)">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="manifest" href="manifest.webmanifest">
+<title>Toupie Live</title>
+<style>
+/* Même apparence que la page iPhone « Adama Shopify » : style Apple, cartes en verre, fond presque noir. */
+:root {
+  --text: #1d1d1f; --muted: #6e6e73; --faint: #aeaeb2; --soft: rgba(0,0,0,.06); --line: rgba(0,0,0,.08);
+  --live: #e0245e; --green: #1f9d55; --orange: #c46f00; --red: #d0342c; --blue: #0a66d8;
+  --glass: linear-gradient(180deg, rgba(255,255,255,.66), rgba(255,255,255,.46));
+  --glass-edge: inset 0 1px 0 rgba(255,255,255,.95), inset 0 0 0 1px rgba(255,255,255,.55);
+  --tile: rgba(255,255,255,.55);
+  --wall: radial-gradient(80% 40% at 0% 0%, rgba(140,155,200,.22), transparent 70%), radial-gradient(80% 40% at 100% 100%, rgba(150,140,190,.16), transparent 70%), #e8e9ee;
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text: #f5f5f7; --muted: #98989d; --faint: #5a5a5f; --soft: rgba(255,255,255,.1); --line: rgba(255,255,255,.1);
+    --live: #ff375f; --green: #30d158; --orange: #ff9f0a; --red: #ff453a; --blue: #0a84ff;
+    --glass: linear-gradient(180deg, rgba(255,255,255,.11), rgba(255,255,255,.05));
+    --glass-edge: inset 0 1px 0 rgba(255,255,255,.16), inset 0 0 0 1px rgba(255,255,255,.07);
+    --tile: rgba(255,255,255,.06);
+    --wall: radial-gradient(80% 40% at 0% 0%, rgba(70,85,150,.16), transparent 72%), radial-gradient(80% 40% at 100% 100%, rgba(80,70,140,.11), transparent 72%), #050608;
+  }
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; background: transparent; color: var(--text); font: 16px/1.35 var(--font); -webkit-font-smoothing: antialiased; font-variant-numeric: tabular-nums; }
+body::before { content: ''; position: fixed; inset: 0; z-index: -1; background: var(--wall); }
+button, input { font: inherit; color: inherit; }
+button { background: none; border: 0; padding: 0; cursor: pointer; }
+.wrap { max-width: 520px; margin: 0 auto; padding: calc(14px + env(safe-area-inset-top)) 16px calc(30px + env(safe-area-inset-bottom)); }
+.muted { color: var(--muted); } .faint { color: var(--faint); }
+.green { color: var(--green); } .orange { color: var(--orange); } .red { color: var(--red); }
+
+.card { background: var(--glass); -webkit-backdrop-filter: blur(24px) saturate(180%); backdrop-filter: blur(24px) saturate(180%);
+  box-shadow: var(--glass-edge), 0 12px 34px -14px rgba(0,0,0,.45); border-radius: 22px; padding: 16px 16px 14px; margin-top: 12px; }
+.h { display: flex; align-items: center; gap: 8px; }
+.h .t { font-weight: 700; font-size: 15px; }
+.sp { flex: 1; }
+.cap { font-size: 13px; color: var(--muted); }
+
+/* en-tête */
+.top { display: flex; align-items: center; gap: 10px; padding: 4px 2px 0; }
+.top b { font-size: 22px; font-weight: 750; letter-spacing: -.01em; }
+.upd { margin-left: auto; display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--muted); }
+.upd i { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 3px rgba(48,209,88,.18); }
+.upd i.old { background: var(--faint); box-shadow: none; }
+
+/* état du live */
+.state { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 700; }
+.dot { position: relative; width: 10px; height: 10px; border-radius: 50%; background: var(--faint); flex: none; }
+.dot.live { background: var(--live); } .dot.ok { background: var(--green); } .dot.warn { background: var(--orange); } .dot.bad { background: var(--red); }
+.dot.live::after { content: ''; position: absolute; inset: 0; border-radius: 50%; background: var(--live); animation: lp 1.8s ease-out infinite; }
+@keyframes lp { 0% { transform: scale(1); opacity: .65; } 100% { transform: scale(3); opacity: 0; } }
+.state .who { font-weight: 500; color: var(--muted); font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.viewers { margin-left: auto; font-weight: 750; font-size: 15px; white-space: nowrap; }
+.big { font-size: 46px; font-weight: 780; letter-spacing: -.035em; line-height: 1; margin-top: 14px; }
+.big small { font-size: 22px; font-weight: 700; letter-spacing: -.01em; }
+.eur { font-size: 15px; font-weight: 650; color: var(--muted); margin-top: 6px; }
+.eur b { color: var(--text); }
+.kp { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; margin-top: 14px; }
+.kp .k { min-width: 0; padding: 9px 8px 8px; border-radius: 14px; background: var(--tile); box-shadow: inset 0 1px 0 rgba(255,255,255,.06); }
+.kp .k span { display: block; font-size: 11.5px; font-weight: 650; color: var(--muted); white-space: nowrap; }
+.kp .k b { display: block; margin-top: 2px; font-size: 17px; font-weight: 760; letter-spacing: -.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.kp .k small { display: block; font-size: 11px; color: var(--faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.now { margin-top: 10px; font-size: 13px; color: var(--muted); }
+.note { margin-top: 12px; padding: 10px 12px; border-radius: 14px; background: color-mix(in srgb, var(--orange) 18%, transparent); font-size: 13.5px; line-height: 1.35; }
+
+/* jours */
+.day { display: grid; grid-template-columns: 92px 1fr auto; align-items: center; gap: 10px; padding: 9px 0; border-top: 1px solid var(--line); }
+.day:first-of-type { border-top: 0; }
+.day .d { font-weight: 650; font-size: 15px; white-space: nowrap; }
+.day .d small { display: block; font-weight: 500; font-size: 11.5px; color: var(--muted); margin-top: 1px; }
+.day .b { height: 8px; border-radius: 4px; background: var(--soft); overflow: hidden; }
+.day .b i { display: block; height: 100%; border-radius: 4px; background: var(--blue); }
+.day.today .b i { background: var(--live); }
+.day .v { text-align: right; white-space: nowrap; font-weight: 750; font-size: 15px; }
+.day .v small { display: block; font-weight: 500; font-size: 11.5px; color: var(--muted); margin-top: 1px; }
+.day.off { opacity: .45; }
+.more { display: block; width: 100%; margin-top: 6px; height: 34px; border-radius: 999px; background: var(--soft); font-size: 13px; font-weight: 650; color: var(--muted); }
+
+/* listes compactes */
+.seg { display: inline-grid; grid-auto-flow: column; background: var(--soft); border-radius: 999px; padding: 3px; }
+.seg button { height: 26px; padding: 0 11px; border-radius: 999px; font-size: 12.5px; font-weight: 650; color: var(--muted); }
+.seg button.on { background: rgba(255,255,255,.22); color: var(--text); box-shadow: inset 0 1px 0 rgba(255,255,255,.3); }
+.row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid var(--line); font-size: 15px; }
+.row:first-child { border-top: 0; }
+.rk { width: 18px; color: var(--faint); font-weight: 700; font-size: 13px; text-align: center; flex: none; }
+.nm { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+.vl { font-weight: 750; white-space: nowrap; }
+.sm { font-size: 12.5px; color: var(--muted); white-space: nowrap; }
+.empty { color: var(--muted); font-size: 14px; padding: 6px 0 2px; }
+.list { margin-top: 8px; }
+
+/* détails repliés */
+details.card > summary { list-style: none; display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 700; font-size: 15px; }
+details.card > summary::-webkit-details-marker { display: none; }
+details.card > summary .chev { margin-left: auto; color: var(--muted); transition: transform .15s; }
+details.card[open] > summary .chev { transform: rotate(90deg); }
+.sub-h { margin: 16px 0 4px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+.err { font-size: 13px; padding: 7px 0; border-top: 1px solid var(--line); }
+.err:first-child { border-top: 0; }
+.err b { color: var(--red); font-weight: 650; }
+code { font: 600 14px ui-monospace, SFMono-Regular, Menlo, monospace; background: var(--soft); padding: 3px 7px; border-radius: 7px; word-break: break-all; }
+.btn2 { height: 34px; padding: 0 14px; border-radius: 999px; background: var(--soft); font-size: 13.5px; font-weight: 650; }
+.foot { color: var(--faint); font-size: 12px; text-align: center; margin-top: 18px; }
+
+/* verrou */
+.lock { min-height: 80vh; display: flex; flex-direction: column; justify-content: center; }
+.lock h1 { font-size: 32px; margin: 0; }
+.lock input { width: 100%; height: 54px; border-radius: 14px; border: 1px solid var(--line); background: var(--tile); font: 600 20px var(--font); padding: 0 16px; letter-spacing: .06em; margin-top: 18px; outline: none; }
+.lock .btn { width: 100%; height: 52px; border-radius: 999px; background: var(--text); color: #000; font-weight: 650; font-size: 17px; margin-top: 12px; }
+@media (prefers-color-scheme: light) { .lock .btn { color: #fff; } }
+.lock .msg { color: var(--red); font-size: 14px; margin-top: 10px; min-height: 20px; }
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<script>
+'use strict';
+const BUILD = 'd4a4f8d887';   // remplacé à la publication par l'empreinte de cette page
+const API = 'https://api.github.com/repos/Adamacasino/toupie-suivi/contents/etat.enc.json?ref=data';
+const RAW = 'https://raw.githubusercontent.com/Adamacasino/toupie-suivi/data/etat.enc.json';
+const CODE_KEY = 'toupie-suivi-code';
+const EURO_PAR_DIAMANT = 0.0046;   // estimation : TikTok reverse ~0,005 $ par diamant reçu
+const app = document.getElementById('app');
+const S = { data: null, blob: null, etag: null, code: null, allDays: false, donScope: 'jour', err: null };
+
+// ---------- outils ----------
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const nf = new Intl.NumberFormat('fr-FR');
+const num = (v) => (v == null || !Number.isFinite(+v) ? '—' : nf.format(Math.round(+v)));
+const euro = (d) => new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: d * EURO_PAR_DIAMANT >= 100 ? 0 : 2 }).format(d * EURO_PAR_DIAMANT);
+const store = (k, v) => { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch {} };
+const read = (k) => { try { return localStorage.getItem(k); } catch { return null; } };
+const b64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
+const normCode = (c) => String(c || '').toLowerCase().replace(/[\s-]+/g, '');
+const JOURS = ['dim.', 'lun.', 'mar.', 'mer.', 'jeu.', 'ven.', 'sam.'];
+const hm = (iso) => new Intl.DateTimeFormat('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' }).format(new Date(iso));
+const dk = (x) => x.toLocaleDateString('fr-FR', { timeZone: 'Europe/Paris' });
+const quand = (iso) => {
+  const d = new Date(iso);
+  if (dk(d) === dk(new Date())) return `aujourd'hui ${hm(iso)}`;
+  if (dk(d) === dk(new Date(Date.now() - 86400000))) return `hier ${hm(iso)}`;
+  if (dk(d) === dk(new Date(Date.now() + 86400000))) return `demain ${hm(iso)}`;
+  return `${JOURS[d.getDay()]} ${d.getDate()}/${String(d.getMonth() + 1).padStart(2, '0')} ${hm(iso)}`;
+};
+const ago = (iso) => {
+  const m = Math.round((Date.now() - Date.parse(iso)) / 60000);
+  if (m < 1) return "à l'instant";
+  if (m < 60) return `il y a ${m} min`;
+  const h = Math.floor(m / 60);
+  return h < 24 ? `il y a ${h} h ${String(m % 60).padStart(2, '0')}` : `il y a ${Math.round(h / 24)} j`;
+};
+const duree = (sec) => {
+  sec = Math.max(0, Math.round(sec || 0));
+  const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60);
+  return h ? `${h} h ${String(m).padStart(2, '0')}` : `${m} min`;
+};
+const PHASES = { boot: 'démarrage', join: 'inscriptions', launch: 'lancement', fight: 'combat', finale: 'duel final', victory: 'victoire' };
+const pl = (n, mot, motPl = mot + 's') => `${num(n)} ${Math.abs(n) > 1 ? motPl : mot}`;
+
+// ---------- données chiffrées ----------
+async function decrypt(blob, code) {
+  const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(normCode(code)), 'PBKDF2', false, ['deriveKey']);
+  const key = await crypto.subtle.deriveKey({ name: 'PBKDF2', salt: b64(blob.salt), iterations: blob.iter, hash: 'SHA-256' }, base, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
+  return JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64(blob.iv) }, key, b64(blob.ct))));
+}
+// Données sur la branche « data » du dépôt (poussée par le PC) : API GitHub (fraîche ; une réponse « rien de neuf »
+// ne compte pas dans la limite de GitHub), sinon raw.githubusercontent (cache de quelques minutes).
+async function fetchBlob() {
+  try {
+    const h = { Accept: 'application/vnd.github.raw+json' };
+    if (S.etag && S.blob) h['If-None-Match'] = S.etag;
+    const r = await fetch(API, { cache: 'no-store', headers: h });
+    if (r.status === 304 && S.blob) return S.blob;
+    if (r.ok) { S.etag = r.headers.get('ETag'); return await r.json(); }
+    if (r.status === 404) throw new Error('vide');
+  } catch (e) { if (e.message === 'vide') throw e; }
+  const r = await fetch(`${RAW}?t=${Date.now()}`, { cache: 'no-store' });
+  if (r.status === 404) throw new Error('vide');
+  if (!r.ok) throw new Error('réseau');
+  return r.json();
+}
+
+async function refresh() {
+  try {
+    const blob = await fetchBlob();
+    if (blob !== S.blob) { S.blob = blob; S.data = await decrypt(blob, S.code); }
+    S.err = null;
+    render();
+  } catch (e) {
+    if (e.name === 'OperationError') { store(CODE_KEY, null); return lock('Le code a changé : tape le nouveau.'); }
+    S.err = e.message === 'vide' ? 'Le PC n’a encore rien envoyé.' : 'Pas de réseau pour l’instant.';
+    if (S.data) render(); else app.innerHTML = `<div class="lock"><h1>Toupie Live</h1><p class="muted">${esc(S.err)}</p></div>`;
+  }
+}
+
+// ---------- verrou ----------
+function lock(message = '') {
+  S.data = null;
+  app.innerHTML = `<form class="lock" id="f"><h1>Toupie Live</h1><div class="muted" style="margin-top:6px">Le suivi des lives Toupie Royale</div>
+    <input id="c" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Code">
+    <button class="btn" type="submit">Ouvrir</button><div class="msg" id="m">${esc(message)}</div></form>`;
+  document.getElementById('f').addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    const code = document.getElementById('c').value;
+    const m = document.getElementById('m');
+    if (!normCode(code)) return;
+    m.textContent = '…';
+    try {
+      const blob = S.blob || await fetchBlob();
+      S.data = await decrypt(blob, code);
+      S.blob = blob; S.code = code; store(CODE_KEY, code);
+      render();
+    } catch (e) {
+      m.textContent = e.name === 'OperationError' ? 'Code incorrect.' : e.message === 'vide' ? 'Le PC n’a encore rien envoyé.' : 'Pas de réseau, réessaie.';
+    }
+  });
+}
+
+// ---------- état général ----------
+const fraiche = (d) => (Date.now() - Date.parse(d.at)) / 60000 < ((d.tiktok?.etat === 'connected') ? 5 : 16);
+function etat(d) {
+  const tk = d.tiktok || {};
+  const p = d.pilote;
+  const prochain = !p?.actif ? '' : p.prochain && Date.parse(p.prochain) > Date.now() ? `prochain live ${quand(p.prochain)}` : p.suivant ? `prochain live ${p.suivant}` : '';
+  if (!fraiche(d) || p?.phase === 'veille') return { dot: '', txt: 'PC en veille', who: prochain || `dernier signe ${ago(d.at)}` };
+  if (tk.etat === 'connected') return { dot: 'live', txt: 'En live', who: tk.pseudo ? `@${tk.pseudo}` : '', live: true };
+  if (tk.etat === 'connecting') return { dot: 'warn', txt: 'Connexion à TikTok…', who: '' };
+  if (tk.etat === 'error') return { dot: 'bad', txt: 'Problème TikTok', who: tk.erreur || '' };
+  if (tk.etat === 'waiting' || d.jeu?.enLigne) return { dot: 'ok', txt: 'Pas en live', who: prochain || 'jeu prêt' };
+  return { dot: 'warn', txt: 'Jeu fermé', who: 'Streamlabs fermé ?' };
+}
+function jourNom(k, i) {
+  if (i === 0) return 'Aujourd’hui';
+  if (i === 1) return 'Hier';
+  if (i === 2) return 'Avant-hier';
+  const dt = new Date(`${k}T12:00:00`);
+  return `${JOURS[dt.getDay()].replace('.', '')} ${dt.getDate()}`;
+}
+
+// ---------- affichage ----------
+function render() {
+  const d = S.data; if (!d) return;
+  const e = etat(d);
+  const tk = d.tiktok || {}, j = d.jeu || {}, live = d.live || {}, s = live.session;
+  const jours = (d.jours || []).slice().reverse();   // aujourd'hui d'abord
+  const t = jours[0] || {};
+  const h = [];
+
+  // en-tête
+  h.push(`<div class="top"><b>Toupie Live</b><span class="upd" id="upd"><i class="${fraiche(d) ? '' : 'old'}"></i>${esc(S.err || ago(d.at))}</span></div>`);
+
+  // l'essentiel : en live ? combien de personnes ? combien aujourd'hui ?
+  h.push(`<div class="card"><div class="state"><span class="dot ${e.dot}"></span><span>${esc(e.txt)}</span><span class="who">${esc(e.who)}</span>${e.live ? `<span class="viewers">👀 ${num(tk.spectateurs)}</span>` : ''}</div>`);
+  h.push(`<div class="big">${num(t.diamants)} <small>💎</small></div>`);
+  h.push(`<div class="eur">≈ <b>${esc(euro(t.diamants || 0))}</b> aujourd’hui${t.cadeaux ? ` · ${pl(t.cadeaux, 'cadeau', 'cadeaux')}` : ''}</div>`);
+  const lim = !!live.limiteH;
+  h.push(`<div class="kp">
+    <div class="k"><span>Public</span><b>${e.live ? num(tk.spectateurs) : '—'}</b><small>pic ${num(t.pic)}</small></div>
+    <div class="k"><span>Joueurs</span><b>${num(t.uniques)}</b><small>différents</small></div>
+    <div class="k"><span>Manches</span><b>${num(t.manches)}</b><small>${t.manchesJouees ? (t.manchesJouees > 1 ? `${num(t.manchesJouees)} jouées` : '1 jouée') : '&nbsp;'}</small></div>
+    <div class="k"><span>Live</span><b>${duree(live.aujourdhuiSec)}</b><small>${esc(lim ? `sur ${live.limiteH} h` : ' ')}</small></div>
+  </div>`);
+  if (e.live && s) h.push(`<div class="now">Live depuis <b data-since="${esc(s.debut)}">${duree((Date.now() - Date.parse(s.debut)) / 1000)}</b> · ${num(s.diamants)} 💎 · ${pl(s.joueurs, 'joueur')}${j.phase ? ` · manche ${num(j.manche)} (${esc(PHASES[j.phase] || j.phase)})` : ''}</div>`);
+  else if (fraiche(d) && j.enLigne && j.phase) h.push(`<div class="now">Manche ${num(j.manche)} · ${esc(PHASES[j.phase] || j.phase)} · ${pl(j.vrais, 'vrai joueur', 'vrais joueurs')}</div>`);
+  if (d.exemple) h.push(`<div class="note"><b>Chiffres d’exemple.</b> Rien de réel pour l’instant : les vrais chiffres arrivent dès que le PC du live est branché.</div>`);
+  h.push('</div>');
+
+  // jour par jour : aujourd'hui, hier, avant-hier…
+  const n = S.allDays ? jours.length : 7;
+  const max = Math.max(1, ...jours.slice(0, n).map((x) => x.diamants || 0));
+  h.push(`<div class="card"><div class="h"><span class="t">Jour par jour</span><span class="sp"></span><span class="cap">7 j : <b style="color:var(--text)">${num(jours.slice(0, 7).reduce((a, x) => a + (x.diamants || 0), 0))} 💎</b></span></div><div class="list">`);
+  jours.slice(0, n).forEach((x, i) => {
+    const vide = !x.diamants && !x.manches && !x.liveSec;
+    h.push(`<div class="day ${i === 0 ? 'today' : ''} ${vide ? 'off' : ''}">
+      <div class="d">${esc(jourNom(x.jour, i))}<small>${x.liveSec ? `${duree(x.liveSec)} de live` : vide ? 'pas de live' : `${num(x.manches)} manches`}</small></div>
+      <div class="b"><i style="width:${((x.diamants || 0) / max * 100).toFixed(1)}%"></i></div>
+      <div class="v">${num(x.diamants)} 💎<small>${x.diamants ? esc(euro(x.diamants)) + ' · ' : ''}${pl(x.uniques || 0, 'joueur')}</small></div></div>`);
+  });
+  h.push(`</div><button class="more" id="days">${S.allDays ? 'Voir moins' : 'Voir 14 jours'}</button></div>`);
+
+  // donateurs
+  const dons = (d.donateurs || {})[S.donScope] || [];
+  h.push(`<div class="card"><div class="h"><span class="t">Top donateurs</span><span class="sp"></span><span class="seg" id="don"><button data-s="jour" class="${S.donScope === 'jour' ? 'on' : ''}">Jour</button><button data-s="semaine" class="${S.donScope === 'semaine' ? 'on' : ''}">Semaine</button></span></div>
+    <div class="list">${dons.length ? dons.slice(0, 3).map((u, i) => `<div class="row"><span class="rk">${i + 1}</span><span class="nm">${esc(u.nom)}</span><span class="vl">${num(u.diamants)} 💎</span></div>`).join('') : '<div class="empty">Pas encore de cadeau.</div>'}</div></div>`);
+
+  // programme du pilote (sous l'essentiel)
+  const p = d.pilote;
+  if (p) {
+    const lignes = [];
+    const enCours = e.live || p.streamlabs === 'live';
+    if (!p.actif) lignes.push('En pause : aucun live automatique');
+    else {
+      if (enCours && p.finActuel && Date.parse(p.finActuel) > Date.now()) lignes.push(`Live prévu jusqu’à <b>${esc(hm(p.finActuel))}</b>`);
+      if (p.prochain && Date.parse(p.prochain) > Date.now()) lignes.push(`Prochain : <b>${esc(quand(p.prochain))}</b>${p.fin ? ` → ${esc(hm(p.fin))}` : ''}`);
+      else if (p.suivant) lignes.push(`Prochain : <b>${esc(p.suivant)}</b>`);
+      if (!lignes.length) lignes.push('Aucun live programmé');
+    }
+    h.push(`<div class="card"><div class="h"><span class="t">Programme</span><span class="sp"></span><span class="sm">${p.actif ? 'pilote auto' : 'pilote coupé'}</span></div>
+      <div style="margin-top:8px;font-size:15px;line-height:1.5">${lignes.join('<br>')}</div>${p.phase && fraiche(d) ? `<div class="cap" style="margin-top:4px">${esc(p.phase)}</div>` : ''}</div>`);
+  }
+
+  // santé, en une ligne ; le détail dans « Plus »
+  const errs = d.erreurs || [];
+  const recentes = errs.filter((x) => Date.now() - x.t < 24 * 3600000);
+  const v = d.pc?.version;
+  h.push(`<div class="card"><div class="h"><span class="t">${recentes.length ? `<span class="orange">⚠️ ${pl(recentes.length, 'erreur')} en 24 h</span>` : '<span class="green">✓</span> Tout va bien'}</span><span class="sp"></span>${d.pc?.majEnAttente ? '<span class="sm orange">mise à jour en attente</span>' : ''}</div>
+    <div class="cap" style="margin-top:4px">Version : ${v ? esc(v.sujet) : '—'}</div></div>`);
+
+  // le reste, replié
+  const cl = d.classement?.jour || [];
+  const mm = d.manches || [];
+  const lv = d.lives || [];
+  h.push(`<details class="card" id="plus"${S.plusOpen ? ' open' : ''}><summary>Plus de détails<span class="chev">›</span></summary>
+    <div class="sub-h">Classement du jour</div>
+    ${d.classement?.champion ? `<div class="cap">👑 Champion : <b style="color:var(--text)">${esc(d.classement.champion.nom)}</b>${d.classement.champion.serie > 1 ? ` · ${d.classement.champion.serie} victoires d’affilée` : ''}</div>` : ''}
+    <div class="list">${cl.length ? cl.map((u, i) => `<div class="row"><span class="rk">${i + 1}</span><span class="nm">${esc(u.nom)}</span><span class="sm">${num(u.victoires)} 🏆</span><span class="vl">${num(u.pts)} pts</span></div>`).join('') : '<div class="empty">Aucun vrai joueur pour l’instant.</div>'}</div>
+    <div class="sub-h">Dernières manches</div>
+    <div class="list">${mm.length ? mm.slice(0, 5).map((m) => `<div class="row"><span class="sm">${esc(hm(new Date(m.t).toISOString()))}</span><span class="nm">${m.bot ? '🤖' : '🏆'} ${esc(m.gagnant)}</span><span class="sm">${pl(m.vrais, 'joueur')}${m.diamants ? ` · ${num(m.diamants)} 💎` : ''}</span></div>`).join('') : '<div class="empty">Pas encore de manche.</div>'}</div>
+    ${lv.length ? `<div class="sub-h">Lives récents</div><div class="list">${lv.slice(0, 5).map((x) => `<div class="row"><span class="nm">${esc(quand(x.debut))}</span><span class="sm">${duree(x.minutes * 60)} · ${pl(x.joueurs, 'joueur')}</span><span class="vl">${num(x.diamants)} 💎</span></div>`).join('')}</div>` : ''}
+    <div class="sub-h">Erreurs récentes</div>
+    <div class="list">${errs.length ? errs.map((x) => `<div class="err"><b>${esc(quand(new Date(x.t).toISOString()))}</b> · ${esc(x.msg)}</div>`).join('') : '<div class="empty">Aucune.</div>'}</div>
+    ${d.ntfy ? `<div class="sub-h">Notifications</div><div class="cap">Dans l’appli ntfy : <b style="color:var(--text)">+</b>, puis ce nom de canal :</div><div style="margin:8px 0"><code>${esc(d.ntfy)}</code></div><button class="btn2" id="copy">Copier le nom</button>` : ''}
+    <div style="margin-top:16px"><button class="btn2" id="relock">Verrouiller</button></div>
+  </details>`);
+  h.push(`<div class="foot">€ = estimation (≈ 0,005 $ par diamant) · ${esc(BUILD)}</div>`);
+  app.innerHTML = h.join('');
+
+  document.getElementById('days')?.addEventListener('click', () => { S.allDays = !S.allDays; render(); });
+  document.getElementById('don')?.addEventListener('click', (ev) => { const b = ev.target.closest('button'); if (b) { S.donScope = b.dataset.s; render(); } });
+  document.getElementById('plus')?.addEventListener('toggle', (ev) => { S.plusOpen = ev.target.open; });
+  document.getElementById('relock')?.addEventListener('click', () => { store(CODE_KEY, null); S.code = null; lock(); });
+  document.getElementById('copy')?.addEventListener('click', async (ev) => {
+    try { await navigator.clipboard.writeText(d.ntfy); ev.target.textContent = 'Copié ✓'; } catch { ev.target.textContent = 'Copie impossible'; }
+  });
+}
+
+// ---------- démarrage ----------
+(async () => {
+  const code = read(CODE_KEY);
+  if (!code) return lock();
+  S.code = code;
+  await refresh();
+})();
+
+// Nouvelle version de la page : rechargement tout seul (pas besoin de la remettre sur l'écran d'accueil)
+async function checkUpdate() {
+  try {
+    const r = await fetch(`version.json?t=${Date.now()}`, { cache: 'no-store' });
+    if (!r.ok) return;
+    const v = await r.json();
+    if (!v.build || BUILD === '__BUILD__' || v.build === BUILD) return;
+    let tried = null; try { tried = sessionStorage.getItem('toupie-reload'); } catch {}
+    if (tried === v.build) return;
+    try { sessionStorage.setItem('toupie-reload', v.build); } catch {}
+    location.replace(`${location.pathname}?v=${v.build}`);
+  } catch {}
+}
+checkUpdate();
+setInterval(() => { if (document.visibilityState === 'visible' && S.code) refresh(); }, 45000);
+setInterval(() => {
+  if (!S.data) return;
+  const u = document.getElementById('upd');
+  if (u) u.lastChild.textContent = S.err || ago(S.data.at);
+  document.querySelectorAll('[data-since]').forEach((x) => { x.textContent = duree((Date.now() - Date.parse(x.dataset.since)) / 1000); });
+}, 15000);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { checkUpdate(); if (S.code) refresh(); } });
+window.addEventListener('pageshow', (e) => { if (e.persisted) { checkUpdate(); if (S.code) refresh(); } });
+</script>
+</body>
+</html>
